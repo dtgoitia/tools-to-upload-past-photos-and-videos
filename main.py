@@ -36,6 +36,7 @@ def get_compressed_path(directory: Path) -> str:
 
 def compress_dir(directory: Path) -> None:
     path = get_compressed_path(directory)
+    print(f'compressing {path}')
     shutil.make_archive(str(path), 'xztar')
     shutil.rmtree(str(directory))
 
@@ -46,16 +47,17 @@ def compress_files(files: List[Path]) -> None:
 
     with tarfile.open(path, 'w') as tar:
         for file in files:
-            tar.add(file)  # compress
+            tar.add(file, arcname=file.name)  # compress
             file.unlink()  # delete
 
 
 def main() -> None:
     cwd = Path.cwd()
+    compress_files(get_files(cwd))
+
     for dir in get_dirs(cwd):
         compress_dir(dir)
     
-    compress_files(get_files(cwd))
 
 
 if __name__ == "__main__":
