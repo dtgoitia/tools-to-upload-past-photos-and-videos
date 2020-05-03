@@ -4,6 +4,8 @@ from typing import List, Tuple
 import shutil
 
 
+COMPRESSION_MODE = 'w:xz'  # https://docs.python.org/3/library/tarfile.html#tarfile.open
+
 def get_dirs(directory: Path) -> List[Path]:
     return [x for x in directory.iterdir() if x.is_dir()]
 
@@ -57,9 +59,9 @@ def compress_dir(directory: Path) -> None:
     print(f'compressing {path}')
     
     arcnames = get_arcnames(get_tree_paths(directory), directory.parent)
-    with tarfile.open(path, 'w:xz') as tar:
+    with tarfile.open(path, COMPRESSION_MODE) as tar:
         for abs_path, arcname in arcnames:
-            print(arcname)
+            print(f'  > {arcname}')
             tar.add(abs_path, arcname=arcname)
 
     shutil.rmtree(str(directory))
@@ -69,7 +71,7 @@ def compress_files(files: List[Path]) -> None:
     path = get_compressed_path(files[0].parent)
     path = f'{path}.tar.xz'
 
-    with tarfile.open(path, 'w:xz') as tar:
+    with tarfile.open(path, COMPRESSION_MODE) as tar:
         for file in files:
             tar.add(file, arcname=file.name)  # compress
             file.unlink()  # delete
