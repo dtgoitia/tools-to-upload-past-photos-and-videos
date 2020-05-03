@@ -11,14 +11,8 @@ def get_files(directory: Path) -> List[Path]:
     return [x for x in directory.iterdir() if x.is_file()]
 
 
-def compress_dir(directory: Path) -> None:
-    print(f'compressing directory: {directory}')
-
-
-def compress_files(files: List[Path]) -> None:
-    cwd = files[0].parent
-
-    compressed_filename = cwd.name\
+def get_compressed_path(directory: Path) -> str:
+    compressed_filename = directory.name\
         .strip() \
         .lower() \
         .replace('á', 'a') \
@@ -34,19 +28,26 @@ def compress_files(files: List[Path]) -> None:
         .replace(')', '') \
         .replace(' - ', '_') \
         .replace(' ', '-')
-    
-    compressed_path = Path.joinpath(cwd, f'{compressed_filename}.tar.lzma')
-    print(compressed_path)
+
+    compressed_path = Path.joinpath(Path.cwd(), f'{compressed_filename}.tar.lzma')
+    return compressed_path
+
+
+def compress_dir(directory: Path) -> None:
+    print(get_compressed_path(directory))
+
+
+def compress_files(files: List[Path]) -> None:
+    print(get_compressed_path(files[0].parent))
 
     # with tarfile.open(compressed_path, 'w') as tar:
     #     for file in files:
     #         tar.add(file)
 
-    print(f'compressing files:')
     for file in files:
-        print(f'  >> {file}')
-    import ipdb; ipdb.set_trace()
-    print(file)
+        pass
+        # print(f'  >> {file}')
+    # print(file)
 
 
 def main() -> None:
