@@ -5,6 +5,7 @@ import shutil
 
 
 COMPRESSION_MODE = 'w:xz'  # https://docs.python.org/3/library/tarfile.html#tarfile.open
+SKIP_FILES = ('Thumbs.db', 'blah')
 
 def get_dirs(directory: Path) -> List[Path]:
     return [x for x in directory.iterdir() if x.is_dir()]
@@ -39,6 +40,8 @@ def get_compressed_path(directory: Path) -> str:
 def get_tree_paths(directory: Path) -> List[Path]:
     result = []
     for path in directory.iterdir():
+        if path.name in SKIP_FILES:
+            continue
         if path.is_dir():
             for subpath in get_tree_paths(path):
                 result.append(subpath)
@@ -73,6 +76,8 @@ def compress_files(files: List[Path]) -> None:
 
     with tarfile.open(path, COMPRESSION_MODE) as tar:
         for file in files:
+            if file.name in SKIP_FILES:
+                continue
             tar.add(file, arcname=file.name)  # compress
             file.unlink()  # delete
 
