@@ -1,6 +1,6 @@
 from pathlib import Path
 import tarfile
-from typing import List
+from typing import List, Tuple
 import shutil
 
 
@@ -34,10 +34,34 @@ def get_compressed_path(directory: Path) -> str:
     return compressed_path
 
 
+def get_tree_paths(directory: Path) -> List[Path]:
+    result = []
+    for path in directory.iterdir():
+        if path.is_dir():
+            for subpath in get_tree_paths(path):
+                result.append(subpath)
+            continue
+        if path.is_file():
+            result.append(path)
+    return result
+
+
+def get_arcnames(paths: List[Path], base_path: Path) -> Tuple[str, str]:
+    as_strings = [str(path) for path in paths]
+    return [(path, path.replace(f'{base_path}/', '')) for path in as_strings]
+
+
 def compress_dir(directory: Path) -> None:
     path = get_compressed_path(directory)
+    path = f'{path}.tar.xz'
     print(f'compressing {path}')
-    shutil.make_archive(str(path), 'xztar')
+    
+    arcnames = get_arcnames(get_tree_paths(directory), directory.parent)
+    with tarfile.open(path, 'w:xz') as tar:
+        for abs_path, arcname in arcnames:
+            print(arcname)
+            tar.add(abs_path, arcname=arcname)
+
     shutil.rmtree(str(directory))
 
 
@@ -45,7 +69,7 @@ def compress_files(files: List[Path]) -> None:
     path = get_compressed_path(files[0].parent)
     path = f'{path}.tar.xz'
 
-    with tarfile.open(path, 'w') as tar:
+    with tarfile.open(path, 'w:xz') as tar:
         for file in files:
             tar.add(file, arcname=file.name)  # compress
             file.unlink()  # delete
